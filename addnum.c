@@ -20,8 +20,6 @@ int main(int argc, char *argv[])
     b = strtoull(argv[2], NULL, 0);
     c = strtoull(argv[3], NULL, 0);
 
-    // Note, by checking to see if a or b are solutions here, solve() can
-    // be made simpler by only checking a + b == c.  That speeds up solve().
     if (solve(a, b, c))
         printf("There is a solution\n");
     else
@@ -29,7 +27,13 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-int solve(uint64_t a, uint64_t b, uint64_t c)
+// The stack here only needs to be 128 deep because we only recurse through
+// the "faster" path, where we add to the smaller number.  This sequence
+// follows a fibonacci sequence pattern, so we will reach 2^64 in the number
+// of steps it takes for a fibonacci sequence to reach 2^64.  Given an initial
+// input of 0 1, this will take 96 steps.  Our actual c is supposed to be
+// less than 10^18 which is even less than 2^64.
+static int solve(uint64_t a, uint64_t b, uint64_t c)
 {
     // Make the first two stack elements be a fake solution.  That way, we
     // can simplify the termination logic because we will be sure to find
@@ -38,9 +42,10 @@ int solve(uint64_t a, uint64_t b, uint64_t c)
     uint64_t stack[256] = {0, c};
     int      i          = 2;
 
-    // Check the initial parameters for a solution and order a < b.
+    // Check the initial parameters for a solution.
     if (a == c || b == c)
 	return 1;
+    // Make a less than b, if necessary.
     if (a > b) {
 	uint64_t tmp = a;
 	a = b;
