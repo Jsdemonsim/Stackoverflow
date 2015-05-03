@@ -120,11 +120,17 @@ import com.google.common.collect.Multiset;
 	//private static final long STRAIGHT_VAL = 0x000000000000001fL;
 
 	// Others would prefer these:
+	
+	// These are masks of 13 cards each.
 	public  static final long SINGLE_MASK  = (1L<<13) - (1L<<0);
 	public  static final long PAIR_MASK    = (1L<<26) - (1L<<13);
 	public  static final long TRIO_MASK    = (1L<<39) - (1L<<26);
 	public  static final long QUAD_MASK    = (1L<<52) - (1L<<39);
+
+	// This is a mask for one particular rank (4 bits).
 	public  static final long RANK_MASK    = (1L<<0)  | (1L<<13) |
 						 (1L<<26) | (1L<<39);
+
+	// This is used to detect a straight.
 	private static final long STRAIGHT_VAL = (1L<<5) - (1L<<0);
 }
