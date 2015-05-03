@@ -22,31 +22,30 @@ import com.google.common.collect.Multiset;
 		assert Iterables.size(cards) == CARDS_IN_HAND;
 		this.cards = ImmutableSortedSet.copyOf(cards);
 		checkArgument(this.cards.size() == 5, cards);
-		int  suitMask = 0;
+		int  suitBits = 0;
 		long info     = 0;
 
 		for (final Card c : this.cards) {
 			final int rank = c.rank().value() - 2;
-			long rankMask  = (CARD_MASK << rank);
-			long rankValue = info & rankMask;
+			long rankBits  = info & (RANK_MASK << rank);
 
-			if (rankValue == 0) {
+			if (rankBits == 0) {
 			    // First card of this rank, add it to singles.
-			    rankValue = 1L << rank;
+			    rankBits = 1L << rank;
 			} else {
 			    // Already have card of this rank, shift it to
 			    // next count.
-			    rankValue |= (rankValue << 13);
+			    rankBits |= (rankBits << 13);
 			}
-			info ^= rankValue;
-			suitMask |= (1 << (c.suit().symbol() - 'A'));
+			info ^= rankBits;
+			suitBits |= (1 << (c.suit().symbol() - 'A'));
 		}
 
 		// Determine straight and flush.
 		long singleCards = info & SINGLE_MASK;
 		singleCards >>>= Long.numberOfTrailingZeros(singleCards);
 		isStraight = (singleCards == STRAIGHT_VAL);
-		isFlush    = (Integer.bitCount(suitMask) == 1);
+		isFlush    = (Integer.bitCount(suitBits) == 1);
 		handInfo   = info;
 	}
 
@@ -117,7 +116,7 @@ import com.google.common.collect.Multiset;
 	//public  static final long PAIR_MASK    = 0x0000000003ffe000L;
 	//public  static final long TRIO_MASK    = 0x0000007ffc000000L;
 	//public  static final long QUAD_MASK    = 0x000fff8000000000L;
-	//private static final long CARD_MASK    = 0x0000008004002001L;
+	//private static final long RANK_MASK    = 0x0000008004002001L;
 	//private static final long STRAIGHT_VAL = 0x000000000000001fL;
 
 	// Others would prefer these:
@@ -125,7 +124,7 @@ import com.google.common.collect.Multiset;
 	public  static final long PAIR_MASK    = (1L<<26) - (1L<<13);
 	public  static final long TRIO_MASK    = (1L<<39) - (1L<<26);
 	public  static final long QUAD_MASK    = (1L<<52) - (1L<<39);
-	public  static final long CARD_MASK    = (1L<<0)  | (1L<<13) |
+	public  static final long RANK_MASK    = (1L<<0)  | (1L<<13) |
 						 (1L<<26) | (1L<<39);
 	private static final long STRAIGHT_VAL = (1L<<5) - (1L<<0);
 }
