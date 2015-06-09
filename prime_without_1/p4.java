@@ -9,10 +9,10 @@ import java.io.InputStreamReader;
 //    and generate to m+1 instead.
 // 2) Only generate and check odd numbers.  Make a special case for 2 as
 //    a prime when counting primes.
-// 3) Use a binary indexed tree (see https://www.topcoder.com/community/
-//    data-science/data-science-tutorials/binary-indexed-trees/) to keep
-//    track of cumulative counts of primes.  By doing this, we can count the
-//    number of primes in a range in O(log n) time.
+// 3) Construct a cumulative count array that tracks how many primes below i
+//    are primes without the digit 1.  That way, for each [n,m] pair you can
+//    count the number of primes in the range in O(1) time.
+
 public class p4 {
     final static int BASE = 10;
     static boolean[] isPrime;
@@ -24,7 +24,6 @@ public class p4 {
 	StringBuilder output = new StringBuilder(noOfTestCaseT);
 	int [][] testCases = new int[noOfTestCaseT][2];
 	int maxNum = 0;
-	int [] tree;
 
 	for (int i=0;i<noOfTestCaseT;i++) {
 	    String[] tempInt = reader.readLine().split(" ");
@@ -35,21 +34,22 @@ public class p4 {
 	}
 
 	isPrime = generatePrime(maxNum);
-	tree = new int[maxNum+1];
-	for (int i=3;i<maxNum;i+=2) {
-	    if (isPrime[i] && !isDigitOnePresent(i)) {
-		updateTree(tree, i);
-	    }
+
+	int [] cumulativeCount = new int[maxNum+1];
+	int count = 1;
+	cumulativeCount[2] = 1;
+	for (int i=3;i<=maxNum;i++) {
+	    if (((i&1) == 1) && isPrime[i] && !isDigitOnePresent(i))
+		count++;
+	    cumulativeCount[i] = count;
 	}
-	// Also add 2.
-	updateTree(tree, 2);
 
 	for (int i=0;i<noOfTestCaseT;i++) {
 	    int n = testCases[i][0];
 	    int m = testCases[i][1];
 	    if (n > 0)
 		n--;
-	    int primesWithoutOnes = readTree(tree, m) - readTree(tree, n);
+	    int primesWithoutOnes = cumulativeCount[m] - cumulativeCount[n];
 	    if (primesWithoutOnes == 0) {
 		output.append("-1\n");
 	    } else {
@@ -58,41 +58,6 @@ public class p4 {
 	    }
 	}
 	System.out.print(output);
-    }
-
-    private static void updateTree(int [] tree, int index)
-    {
-	int maxNum = tree.length - 1;
-	while (index <= maxNum) {
-	    tree[index]++;
-	    index += (index & -index);
-	}
-    }
-
-    private static int readTree(int [] tree, int index)
-    {
-	int maxNum = tree.length - 1;
-	int sum = 0;
-	while (index > 0) {
-	    sum += tree[index];
-	    index -= (index & -index);
-	}
-	return sum;
-    }
-
-    private static int getPrimesWithoutOneCount(int n, int m) {
-	int totalCount = 0;
-	if (n <= 2)
-	    totalCount++;
-	n = n | 1;
-	for ( int i = n ; i <= m ; i += 2) {
-	    if(isPrime[i] && ! isDigitOnePresent(i) ){
-		totalCount++;
-	    }
-	}
-
-	if (totalCount == 0) totalCount = -1;
-	return totalCount;
     }
 
     private static boolean isDigitOnePresent(int i) {

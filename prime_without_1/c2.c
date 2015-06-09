@@ -10,6 +10,8 @@
 
 static bool *generatePrime(int maxNum);
 static bool isDigitOnePresent(int i);
+static void updateTree(int *tree, int index, int maxNum);
+static int readTree(int *tree, int index, int maxNum);
 
 int main(void)
 {
@@ -18,8 +20,7 @@ int main(void)
     int   i         = 0;
     int   j         = 0;
     int   maxNum    = 0;
-    int  *counts    = NULL;
-    int   count     = 0;
+    int  *tree      = NULL;
     bool *isPrime   = NULL;
 
     scanf("%d", &numTests);
@@ -33,28 +34,46 @@ int main(void)
 
     isPrime = generatePrime(maxNum);
 
-    counts    = calloc(maxNum+1, sizeof(*counts));
-    count     = 1;
-    counts[2] = count;
-    for (i=3;i<=maxNum;i++) {
-	if ((i&1) && isPrime[i] && !isDigitOnePresent(i))
-	    count++;
-	counts[i] = count;
+    tree = calloc(maxNum+1, sizeof(*tree));
+    for (i=3;i<maxNum;i+=2) {
+	if (isPrime[i] && !isDigitOnePresent(i))
+	    updateTree(tree, i, maxNum);
     }
+    // Also add 2
+    updateTree(tree, 2, maxNum);
 
     for (i=0;i<numTests;i++) {
 	int n     = testCases[i+i];
 	int m     = testCases[i+i+1];
+	int count = 0;
 
 	if (n > 0)
 	    n--;
-	count = counts[m] - counts[n];
+	count = readTree(tree, m, maxNum) - readTree(tree, n, maxNum);
 	if (count == 0)
 	    puts("-1");
 	else
 	    printf("%d\n", count);
     }
     return 0;
+}
+
+static void updateTree(int *tree, int index, int maxNum)
+{
+    while (index <= maxNum) {
+	tree[index]++;
+	index += (index & -index);
+    }
+}
+
+static int readTree(int *tree, int index, int maxNum)
+{
+    int sum = 0;
+    while (index > 0) {
+	sum += tree[index];
+	index -= (index & -index);
+    }
+    return sum;
 }
 
 static bool isDigitOnePresent(int i)
