@@ -52,7 +52,7 @@ public class p1 {
     }
 
     private static boolean[] generatePrime() {
-	int root = (int) Math.sqrt(MAX);
+	int root = (int) Math.sqrt(MAX) + 1;
 	boolean[] isPrime = new boolean[MAX];
 	Arrays.fill(isPrime, true);
 	isPrime[0] = false; isPrime[1] = false;

@@ -70,7 +70,7 @@ public class p2 {
     }
 
     private static boolean[] generatePrime(int maxNum) {
-	int root = (int) Math.sqrt(maxNum);
+	int root = (int) Math.sqrt(maxNum) + 1;
 	boolean[] isPrime = new boolean[maxNum];
 	Arrays.fill(isPrime, true);
 	isPrime[0] = false; isPrime[1] = false;

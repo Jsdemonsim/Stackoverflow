@@ -11,7 +11,7 @@
 static bool *generatePrime(int maxNum);
 static bool isDigitOnePresent(int i);
 static void updateTree(int *tree, int index, int maxNum);
-static int readTree(int *tree, int index, int maxNum);
+static int readTree(int *tree, int index);
 
 int main(void)
 {
@@ -32,10 +32,10 @@ int main(void)
 	    maxNum = testCases[j+1];
     }
 
-    isPrime = generatePrime(maxNum);
+    isPrime = generatePrime(maxNum+1);
 
     tree = calloc(maxNum+1, sizeof(*tree));
-    for (i=3;i<maxNum;i+=2) {
+    for (i=3;i<=maxNum;i+=2) {
 	if (isPrime[i] && !isDigitOnePresent(i))
 	    updateTree(tree, i, maxNum);
     }
@@ -49,7 +49,7 @@ int main(void)
 
 	if (n > 0)
 	    n--;
-	count = readTree(tree, m, maxNum) - readTree(tree, n, maxNum);
+	count = readTree(tree, m) - readTree(tree, n);
 	if (count == 0)
 	    puts("-1");
 	else
@@ -66,7 +66,7 @@ static void updateTree(int *tree, int index, int maxNum)
     }
 }
 
-static int readTree(int *tree, int index, int maxNum)
+static int readTree(int *tree, int index)
 {
     int sum = 0;
     while (index > 0) {

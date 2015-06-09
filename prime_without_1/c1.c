@@ -30,13 +30,14 @@ int main(void)
 	if (testCases[j+1] > maxNum)
 	    maxNum = testCases[j+1];
     }
+    maxNum++;
 
     isPrime = generatePrime(maxNum);
 
-    counts    = calloc(maxNum+1, sizeof(*counts));
+    counts    = calloc(maxNum, sizeof(*counts));
     count     = 1;
     counts[2] = count;
-    for (i=3;i<=maxNum;i++) {
+    for (i=3;i<maxNum;i++) {
 	if ((i&1) && isPrime[i] && !isDigitOnePresent(i))
 	    count++;
 	counts[i] = count;
@@ -70,7 +71,7 @@ static bool isDigitOnePresent(int i)
 
 static bool *generatePrime(int maxNum)
 {
-    int   root    = (int) sqrt(maxNum);
+    int   root    = (int) sqrt(maxNum) + 1;
     bool *isPrime = calloc(maxNum, sizeof(bool));
     int   i       = 0;
 

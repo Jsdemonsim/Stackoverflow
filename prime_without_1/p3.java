@@ -32,10 +32,10 @@ public class p3 {
 		maxNum = testCases[i][1];
 	}
 
-	isPrime = generatePrime(maxNum);
+	isPrime = generatePrime(maxNum+1);
 
 	// Get rid of all primes with a "1" digit beforehand.
-	for (int i=3;i<maxNum;i+=2) {
+	for (int i=3;i<=maxNum;i+=2) {
 	    if (isPrime[i] && isDigitOnePresent(i))
 		isPrime[i] = false;
 	}
@@ -78,7 +78,7 @@ public class p3 {
     }
 
     private static boolean[] generatePrime(int maxNum) {
-	int root = (int) Math.sqrt(maxNum);
+	int root = (int) Math.sqrt(maxNum) + 1;
 	boolean[] isPrime = new boolean[maxNum];
 	Arrays.fill(isPrime, true);
 	isPrime[0] = false; isPrime[1] = false;

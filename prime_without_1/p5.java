@@ -33,9 +33,10 @@ public class p5 {
 	    if (testCases[i][1] > maxNum)
 		maxNum = testCases[i][1];
 	}
+	maxNum++;
 
 	isPrime = generatePrime(maxNum);
-	tree = new int[maxNum+1];
+	tree = new int[maxNum];
 	for (int i=3;i<maxNum;i+=2) {
 	    if (isPrime[i] && !isDigitOnePresent(i)) {
 		updateTree(tree, i);
@@ -106,7 +107,7 @@ public class p5 {
     }
 
     private static boolean[] generatePrime(int maxNum) {
-	int root = (int) Math.sqrt(maxNum);
+	int root = (int) Math.sqrt(maxNum) + 1;
 	boolean[] isPrime = new boolean[maxNum];
 	Arrays.fill(isPrime, true);
 	isPrime[0] = false; isPrime[1] = false;
