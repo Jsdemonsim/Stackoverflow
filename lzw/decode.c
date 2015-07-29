@@ -75,7 +75,7 @@ typedef struct InputState {
 
 static int ReadNextCode(InputState *inState);
 
-#define NO_CODE		0xffff
+#define END_OF_FILE_CODE		0xffff
 
 static void decode(FILE *in, FILE *out)
 {
@@ -88,7 +88,7 @@ static void decode(FILE *in, FILE *out)
     int         i         = 0;
 
     // Abort on empty input file.
-    if (prevCode == NO_CODE)
+    if (prevCode == END_OF_FILE_CODE)
 	return;
 
     // The maximum of all sequences will be if the sequences increase in length
@@ -114,8 +114,10 @@ static void decode(FILE *in, FILE *out)
 	uint16_t code = ReadNextCode(&inState);
 
 	if (code > dictSize) {
-	    if (code == NO_CODE)
+	    // The normal case would be that the file ended.
+	    if (code == END_OF_FILE_CODE)
 		break;
+	    // Otherwise there was a problem with the input file.
 	    fprintf(stderr, "Error: bad code %d, dictSize = %d.\n", code,
 		    dictSize);
 	    exit(1);
@@ -123,24 +125,24 @@ static void decode(FILE *in, FILE *out)
 
 	// Add entry to dictionary first.  That way, if we need to use
 	// the just added dictionary entry, it will be ready to use.
-	uint8_t lastChar;
-	if (code == dictSize)
-	    lastChar = dict[prevCode].seq[0];
-	else
-	    lastChar = dict[code].seq[0];
-
 	if (dictSize == DICT_MAX) {
 	    // Dictionary hit max size.  Reset it.
 	    dictSize            = 256;
 	    allocInfo.nextAlloc = mark;
 	} else {
 	    // Extend dictionary by one entry.  The new entry is the same
-	    // as the previous entry plus one character (lastChar).
+	    // as the previous entry plus one character.
 	    int prevLen        = dict[prevCode].len;
 	    dict[dictSize].len = prevLen + 1;
 	    dict[dictSize].seq = Allocate(&allocInfo, prevLen + 1);
 	    memcpy(dict[dictSize].seq, dict[prevCode].seq, prevLen);
-	    dict[dictSize++].seq[prevLen] = lastChar;
+	    // The last character normally comes from the first character
+	    // of the current code.  However, if it is the newly added entry,
+	    // then it is the first character of the previous code.
+	    if (code == dictSize)
+		dict[dictSize++].seq[prevLen] = dict[prevCode].seq[0];
+	    else
+		dict[dictSize++].seq[prevLen] = dict[code].seq[0];
 	}
 
 	// Output code sequence to file.
@@ -152,6 +154,9 @@ static void decode(FILE *in, FILE *out)
     free(allocInfo.base);
 }
 
+/**
+ * Intializes the custom allocator.
+ */
 static void AllocInit(AllocInfo *alloc, int size)
 {
     alloc->base      = malloc(size);
@@ -159,6 +164,9 @@ static void AllocInit(AllocInfo *alloc, int size)
     alloc->nextAlloc = alloc->base;
 }
 
+/**
+ * Allocate memory using custom allocator.
+ */
 static uint8_t *Allocate(AllocInfo *alloc, int len)
 {
     uint8_t *ret = alloc->nextAlloc;
@@ -170,7 +178,7 @@ static uint8_t *Allocate(AllocInfo *alloc, int len)
 }
 
 /**
- * Inputs 12 bits of code from the file in a MSB manner.
+ * Reads a 12 bit code from the file in a MSB manner.
  */
 static int ReadNextCode(InputState *inState)
 {
@@ -178,13 +186,13 @@ static int ReadNextCode(InputState *inState)
     int b0 = fgetc(inState->fp);
 
     if (b0 == EOF)
-	return NO_CODE;
+	return END_OF_FILE_CODE;
 
     if (inState->leftoverBits == 0) {
 	int b1 = fgetc(inState->fp);
 
 	if (b1 == EOF)
-	    return NO_CODE;
+	    return END_OF_FILE_CODE;
 	code = (b0 << 4) | (b1 >> 4);
 	inState->leftoverBits = 4;
 	inState->leftoverCode = (b1 & 0xf) << 8;
